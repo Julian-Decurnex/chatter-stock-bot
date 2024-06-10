@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  bddvector:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4

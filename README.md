@@ -28,11 +28,8 @@ This project develops a chatbot named `chatter-stock-bot`, designed to function 
    ```
    git clone <repository-url>
    ```
-2. **Install dependencies**:
-   ```
-   pip install -r requirements.txt
-   ```
-3. **Set up environment variables**:
+
+2. **Set up environment variables**:
    Include the following in your `.env` file:
    ```
    LANGCHAIN_API_KEY=<your_langchain_api_key>
@@ -50,8 +47,23 @@ This project develops a chatbot named `chatter-stock-bot`, designed to function 
   Ensure that the Pinecone index name is set correctly in your `.env` file to match your configuration.
 
 ## Running the Application
+### Docker
+1. You can run the application using Docker Compose. First, build the application with the following command:
+```
+docker-compose build
+```
+2. After the initial build, you can start the application using:
+```
+docker-compose up
+```
+3. The application will be available at port 8000, and you can access it via [localhost:8000](http://localhost:8000).
 
-Execute the chatbot with the following command:
+### Local
+1. **Install dependencies**:
+```
+pip install -r requirements.txt
+```
+2. **Execute the chatbot with the following command:**
 ```
 chainlit run agent-chain.py
 ```

@@ -49,7 +49,7 @@ if __name__=="__main__":
     
     files = files_2_inst.get_files_paths(PATH_FILES)
     
-    rang = 20
+    rang = 50
     # Dividir los archivos en sublistas de tamaño `rang`
     file_ranges = [files[i:i + rang] for i in range(0, len(files), rang)]
     

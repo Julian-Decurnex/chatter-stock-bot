@@ -182,7 +182,7 @@ class Files_2_vs:
                 spec=ServerlessSpec(
                     cloud=os.getenv("PINECONE_CLOUD"),
                     region=os.getenv("PINECONE_REGION")
-                )
+                ) 
             )
             # wait for index to be initialized
             while not pc.describe_index(index_name).status['ready']:
@@ -248,24 +248,16 @@ class Files_2_vs:
         while retries < self.MAX_RETRIES:
             try:
                 PineconeVectorStore.from_documents([doc], index_name=self.INDEX_NAME, embedding=embeddings_sch)
-                time.sleep(5)
                 logging.info(f"Data added to PineconeVectorStore | file name: {file_name}")
                 break
             except (ConnectionError, NewConnectionError, Timeout) as conn_err:
+                logging.error(f"Connection error while adding document {file_name} (attempt {retries + 1}/{self.MAX_RETRIES}): {conn_err}")
                 retries += 1
-                logging.error(f"Connection error while adding document {file_name} (attempt {retries}/{self.MAX_RETRIES}): {conn_err}")
-                if retries >= self.MAX_RETRIES:
-                    logging.error(f"Failed to add document {file_name} after {self.MAX_RETRIES} retries due to connection error", "./log/error_log.txt")
-                else:
-                    time.sleep(self.RETRY_DELAY)  # Esperar antes del próximo intento
+                time.sleep(self.RETRY_DELAY * 2**retries)  # Exponential backoff
             except Exception as e:
+                logging.error(f"Failed to add document {file_name} (attempt {retries + 1}/{self.MAX_RETRIES}): {e}")
                 retries += 1
-                logging.error(f"Failed to add document {file_name} (attempt {retries}/{self.MAX_RETRIES}): {e}")
-                if retries >= self.MAX_RETRIES:
-                    logging.error(f"Failed to add document {file_name} after {self.MAX_RETRIES} retries: {e}", "./log/error_log.txt")
-                else:
-                    time.sleep(self.RETRY_DELAY)  # Esperar antes del próximo intento
-                
+                time.sleep(self.RETRY_DELAY * 2**retries)
 
     # Man function (execute this)
     def main(self, files_docs_list):

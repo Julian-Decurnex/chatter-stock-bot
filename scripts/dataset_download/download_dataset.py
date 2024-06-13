@@ -5,7 +5,7 @@ import PyPDF2
 from pathlib import Path
 from dotenv import load_dotenv
 
-MAX_FILES_TO_DOWNLOAD = 15
+MAX_FILES_TO_DOWNLOAD = 10
 
 # Load environment variables
 def load_environment_variables(env_path):
@@ -34,10 +34,13 @@ def download_and_extract_text(s3_client, bucket_name, obj_key, file_path):
         pdf_reader = PyPDF2.PdfReader(pdf_data)
         text = ''.join(page.extract_text() for page in pdf_reader.pages if page.extract_text())
         
-        with open(file_path, 'w', encoding='utf-8') as f:
+        # Change the file extension to .txt
+        txt_file_path = file_path.replace('.pdf', '.txt')
+
+        with open(txt_file_path, 'w', encoding='utf-8') as f:
             f.write(text)
         
-        return text
+        return txt_file_path  # Return the path to the generated text file
     except PyPDF2.errors.PdfReadError:
         print(f"Failed to read the PDF file: {obj_key}. Skipping.")
         return None
@@ -57,8 +60,7 @@ def main():
     s3_client = initialize_s3_client(AWS_ACCESS_KEY, AWS_SECRET_KEY)
     pdf_list = fetch_pdf_list(s3_client, AWS_BUCKET_NAME, AWS_BUCKET_PREFIX)
     total_files = len(pdf_list)
-    downloaded_texts = []
-    downloaded_files_count = 0
+    downloaded_files = []
 
     for pdf_obj in pdf_list:
         file_name = pdf_obj['Key'].split('/')[-1]
@@ -66,21 +68,19 @@ def main():
 
         if os.path.exists(file_path):
             print(f"File {file_name} already exists. Skipping download.")
-            downloaded_files_count += 1
             continue
 
-        text = download_and_extract_text(s3_client, AWS_BUCKET_NAME, pdf_obj['Key'], file_path)
-        if text:
-            downloaded_texts.append(text)
-            downloaded_files_count += 1
-            remaining_files = total_files - downloaded_files_count
+        txt_file_path = download_and_extract_text(s3_client, AWS_BUCKET_NAME, pdf_obj['Key'], file_path)
+        if txt_file_path:
+            downloaded_files.append(txt_file_path)
+            remaining_files = total_files - len(downloaded_files)
             print(f"Remaining files to download: {remaining_files}")
 
-        if downloaded_files_count >= MAX_FILES_TO_DOWNLOAD:
+        if len(downloaded_files) >= MAX_FILES_TO_DOWNLOAD:
             break
 
     print("Download process completed.")
-    return downloaded_texts
+    return downloaded_files
 
 if __name__ == "__main__":
     main()

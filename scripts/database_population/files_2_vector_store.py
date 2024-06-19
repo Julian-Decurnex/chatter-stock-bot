@@ -127,7 +127,8 @@ class Files_2_vs:
         name_file = file_docs.split("/")[-1]
         # split name file to company and year
         name_file_split = name_file.split("_")
-        company, p_year = "_".join(name_file_split[0:2]) , name_file_split[2].split(".")[0]
+        size = len(name_file_split) - 1
+        company, p_year = "_".join(name_file_split[0:size]) , name_file_split[size].split(".")[0]
         year = re.search(r'\b\d{4}\b', p_year).group(0)
         try:
             # Detect files in cache
